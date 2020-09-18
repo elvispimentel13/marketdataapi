@@ -18,7 +18,7 @@ class Stocks:
         if tickerData.empty:
             tickerData = self.downloadTickerData(tickerInfo, 2)
         priceLast = tickerData['Close'].iloc[-1]
-        stockPrice = {ticker: priceLast}
+        stockPrice = {"symbol": ticker, "price": priceLast}
         return (json.dumps(stockPrice))
 
     def downloadTickerData(self, tickerInfo, interval = None):
@@ -41,7 +41,10 @@ class Stocks:
             tickersData = self.downloadTickersData(tickers)
             if tickersData.empty:
                 tickersData = self.downloadTickersData(tickers, 2)
-            return (tickersData["Close"].iloc[-1].to_json())
+            tickerslist = []
+            for ticker, priceLast in tickersData["Close"].iloc[-1].items():
+                tickerslist.append({"symbol": ticker, "price": priceLast})
+            return tickerslist
         else:
             return self.getPrice(tickers)
 
@@ -55,9 +58,10 @@ class Stocks:
             tickerDF = yf.download(period='1d', start=lastClose, end=today.isoformat()[:10])
             return tickerDF
 
-#stocks = Stocks()
+stocks = Stocks()
 #stocks.getTickerInfo('CQP')
 #print(stocks.getPrice(['AAPL']))
 #print(stocks.getPrices(['KMI']))
-#print(stocks.getPrices(['KMI', 'PLM']))
+print(stocks.getPrices(['KMI', 'PLM']))
 
+#[{"symbol":"ddd", "price":334.00}, {"symbol":"ddd", "price":334.00}]
