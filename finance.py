@@ -50,7 +50,7 @@ class Stocks:
             if tickersData.empty:
                 for tkr in tickers:
                     tickerslist.append({"symbol": tkr, "price": 0})
-                return tickerslist
+                return (json.dumps(tickerslist))
             else:
                 for ticker, pricelast in tickersData["Close"].iloc[-1].items():
                     if math.isnan(pricelast):
@@ -73,10 +73,10 @@ class Stocks:
         except:
             return pd.DataFrame()
 
-stocks = Stocks()
+#stocks = Stocks()
 #stocks.getTickerInfo('CQPRR')
 #print(stocks.getPrice(['AAPLRR']))
 #print(stocks.getPrices(['KMIXXX']))
-print(stocks.getPrices(['KMIRX', 'PLMXXR']))
+#print(stocks.getPrices(['KMIRX', 'PLMXXR']))
 
 #[{"symbol":"ddd", "price":334.00}, {"symbol":"ddd", "price":334.00}]
