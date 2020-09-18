@@ -8,7 +8,7 @@ prices = Stocks()
 
 
 
-@app.route('/ticker-price', methods=['GET'])
+@app.route('/ticker-price', methods=['POST'])
 def getStockPrice():
     data = request.json
     pricedata = prices.getPrices(data['tickers'])
