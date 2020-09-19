@@ -81,11 +81,13 @@ class Stocks:
                         for row in tickersData["Close"].itertuples():
                             rowdict = row._asdict()
                             if rowdict[tkr] is not None:
-                                tkrdtrg.append({"date": rowdict["Index"].isoformat()[:10], "price": 0 if math.isnan(rowdict[tkr]) else rowdict[tkr]})
+                                newitem = {"date": rowdict["Index"].isoformat()[:10], "price": 0 if math.isnan(rowdict[tkr]) else rowdict[tkr]}
+                                duplicate = list(filter(lambda d: d['date'] in rowdict["Index"].isoformat()[:10], tkrdtrg))
+                                if len(duplicate) == 0:
+                                   tkrdtrg.append(newitem)
                         tickerslist.append({"symbol": tkr, "range": tkrdtrg})
                     else:
                         tkrdtrg = []
-                        print(tickersData["Close"])
                         for row in tickersData["Close"].items():
                             if row[1] is not None:
                                 newitem = {"date": row[0].isoformat()[:10], "price": 0 if math.isnan(row[1]) else row[1]}
@@ -93,7 +95,7 @@ class Stocks:
                                 if len(duplicate) == 0:
                                    tkrdtrg.append(newitem)
                         tickerslist.append({"symbol": tickers[0], "range": tkrdtrg})
-                return json.dumps(tickerslist)
+                print(json.dumps(tickerslist))
 
     def downloadTickersData(self, tickers, interval=None):
         today = datetime.datetime.today()
@@ -130,8 +132,8 @@ class Stocks:
 
 # stocks = Stocks()
 # tickers = ["KMI"]
-# stocks.downloadTickersDataRange(tickers, "2019-10-01", "2019-10-01")
-# stocks.getPricesRange(tickers, "2020-09-18", "2020-09-15")
+# stocks.downloadTickersDataRange(tickers, "2020-09-18", "2020-09-18")
+# stocks.getPricesRange(tickers, "2020-09-18", "2020-09-18")
 # stocks.getTickerInfo('CQPRR')
 # print(stocks.getPrice(['AAPLRR']))
 # print(stocks.getPrices(['KMIXXX']))
