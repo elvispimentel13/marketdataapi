@@ -95,7 +95,7 @@ class Stocks:
                                 if len(duplicate) == 0:
                                    tkrdtrg.append(newitem)
                         tickerslist.append({"symbol": tickers[0], "range": tkrdtrg})
-                print(json.dumps(tickerslist))
+                return json.dumps(tickerslist)
 
     def downloadTickersData(self, tickers, interval=None):
         today = datetime.datetime.today()
