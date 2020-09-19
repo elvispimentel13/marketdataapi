@@ -14,5 +14,17 @@ def getStockPrice():
     pricedata = prices.getPrices(data['tickers'])
     return pricedata
 
+@app.route('/range/getPrices', methods=['POST'])
+def getPricesRange():
+    data = request.json
+    enddt = None
+    startdt = None
+    if 'enddate' in data:
+        enddt = data['enddate']
+    if 'startdate' in data:
+        startdt = data['startdate']
+    pricesdatarange = prices.getPricesRange(data['tickers'], enddt, startdt)
+    return pricesdatarange
+
 if __name__ == '__main__':
     app.run(debug=True)

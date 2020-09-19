@@ -5,6 +5,7 @@ import math
 import pandas as pd
 from datetime import timedelta
 
+
 class Stocks:
     def getTickerInfo(self, ticker):
         tickerInfo = yf.Ticker(ticker)
@@ -26,7 +27,7 @@ class Stocks:
         stockPrice = {"symbol": ticker, "price": priceLast}
         return (json.dumps(stockPrice))
 
-    def downloadTickerData(self, tickerInfo, interval = None):
+    def downloadTickerData(self, tickerInfo, interval=None):
         today = datetime.datetime.today()
         if not interval:
             tickerDF = tickerInfo.history(period='1h')
@@ -36,7 +37,7 @@ class Stocks:
             tickerDF = tickerInfo.history(period='1d', start=lastClose, end=today.isoformat()[:10])
             return tickerDF
 
-    #MULTIPLE TICKERS
+    # Multiple tickers prices
     def getPrices(self, tickers):
         tickerslist = []
         if not tickers:
@@ -56,11 +57,45 @@ class Stocks:
                     if math.isnan(pricelast):
                         pricelast = 0
                     tickerslist.append({"symbol": ticker, "price": pricelast})
-                return (json.dumps(tickerslist))
+                return json.dumps(tickerslist)
         else:
             return self.getPrice(tickers)
 
-    def downloadTickersData(self, tickers, interval = None):
+    # Ticker price range data based on date(s)
+    def getPricesRange(self, tickers, enddt=None, startdt=None):
+        tickerslist = []
+        if not tickers:
+            print("List cannot be empty.")
+        elif isinstance(tickers, str):
+            tickers = [tickers]
+        else:
+            tickersData = self.downloadTickersDataRange(tickers, enddt, startdt)
+            if tickersData.empty:
+                for tkr in tickers:
+                    tickerslist.append({"symbol": tkr, "range": []})
+                return (json.dumps(tickerslist))
+            else:
+                for tkr in tickers:
+                    tkrdtrg = []
+                    if tickers.__len__() > 1:
+                        for row in tickersData["Close"].itertuples():
+                            rowdict = row._asdict()
+                            if rowdict[tkr] is not None:
+                                tkrdtrg.append({"date": rowdict["Index"].isoformat()[:10], "price": 0 if math.isnan(rowdict[tkr]) else rowdict[tkr]})
+                        tickerslist.append({"symbol": tkr, "range": tkrdtrg})
+                    else:
+                        tkrdtrg = []
+                        print(tickersData["Close"])
+                        for row in tickersData["Close"].items():
+                            if row[1] is not None:
+                                newitem = {"date": row[0].isoformat()[:10], "price": 0 if math.isnan(row[1]) else row[1]}
+                                duplicate = list(filter(lambda d: d['date'] in row[0].isoformat()[:10], tkrdtrg))
+                                if len(duplicate) == 0:
+                                   tkrdtrg.append(newitem)
+                        tickerslist.append({"symbol": tickers[0], "range": tkrdtrg})
+                return json.dumps(tickerslist)
+
+    def downloadTickersData(self, tickers, interval=None):
         today = datetime.datetime.today()
         try:
             if not interval:
@@ -73,10 +108,33 @@ class Stocks:
         except:
             return pd.DataFrame()
 
-#stocks = Stocks()
-#stocks.getTickerInfo('CQPRR')
-#print(stocks.getPrice(['AAPLRR']))
-#print(stocks.getPrices(['KMIXXX']))
-#print(stocks.getPrices(['KMIRX', 'PLMXXR']))
+    def downloadTickersDataRange(self, tickers, enddt=None, startdt=None):
+        today = datetime.datetime.today()
+        try:
+            if enddt is not None:
+                enddate = datetime.datetime.strptime(enddt, '%Y-%m-%d')
+                enddate = enddate + datetime.timedelta(days=1)
+            elif enddt is None:
+                enddate = today
+            if startdt is not None:
+                startdate = datetime.datetime.strptime(startdt, '%Y-%m-%d')
+            elif startdt is None:
+                startdate = today - datetime.timedelta(days=1)
+            if startdate >= enddate:
+                startdate = enddate - datetime.timedelta(days=1)
+            tickerDF = yf.download(tickers, start=startdate.isoformat()[:10], end=enddate.isoformat()[:10])
+            return tickerDF
+        except:
+            return pd.DataFrame()
 
-#[{"symbol":"ddd", "price":334.00}, {"symbol":"ddd", "price":334.00}]
+
+# stocks = Stocks()
+# tickers = ["KMI"]
+# stocks.downloadTickersDataRange(tickers, "2019-10-01", "2019-10-01")
+# stocks.getPricesRange(tickers, "2020-09-18", "2020-09-15")
+# stocks.getTickerInfo('CQPRR')
+# print(stocks.getPrice(['AAPLRR']))
+# print(stocks.getPrices(['KMIXXX']))
+# print(stocks.getPrices(['KMIRX', 'PLMXXR']))
+
+# [{"symbol":"ddd", "price":334.00}, {"symbol":"ddd", "price":334.00}]
