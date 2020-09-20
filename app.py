@@ -20,9 +20,11 @@ def getPricesRange():
     enddt = None
     startdt = None
     if 'enddate' in data:
-        enddt = data['enddate']
+        if data['enddate']:
+            enddt = data['enddate']
     if 'startdate' in data:
-        startdt = data['startdate']
+        if data['startdate']:
+            startdt = data['startdate']
     pricesdatarange = prices.getPricesRange(data['tickers'], enddt, startdt)
     return pricesdatarange
 
