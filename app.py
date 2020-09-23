@@ -7,7 +7,6 @@ app = flask.Flask(__name__)
 prices = Stocks()
 
 
-
 @app.route('/ticker-price', methods=['POST'])
 def getStockPrice():
     data = request.json
