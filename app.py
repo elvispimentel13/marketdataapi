@@ -13,6 +13,13 @@ def getStockPrice():
     pricedata = prices.getPrices(data['tickers'])
     return pricedata
 
+@app.route('/tickerInfo', methods=['POST'])
+def getTickerInfo():
+    ticker = request.args.get('ticker')
+    data = prices.getTickerInfo(ticker)
+    tickerdata = data.get_info()
+    return tickerdata
+
 @app.route('/range/getPrices', methods=['POST'])
 def getPricesRange():
     data = request.json
@@ -26,6 +33,12 @@ def getPricesRange():
             startdt = data['startdate']
     pricesdatarange = prices.getPricesRange(data['tickers'], enddt, startdt)
     return pricesdatarange
+
+@app.route('/ticker/getProfiles', methods=['POST'])
+def getTickersProfile():
+    data = request.json
+    profilesdata = prices.getTickersProfile(data['tickers'])
+    return profilesdata
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -12,6 +12,7 @@ class Stocks:
         return tickerInfo
 
     def getPrice(self, ticker):
+        stockPrice = []
         if not ticker:
             print("Ticker is needed.")
         elif not isinstance(ticker, str):
@@ -24,7 +25,7 @@ class Stocks:
             priceLast = 0
         else:
             priceLast = tickerData['Close'].iloc[-1]
-        stockPrice = {"symbol": ticker, "price": priceLast}
+        stockPrice.append({"symbol": ticker, "price": priceLast})
         return (json.dumps(stockPrice))
 
     def downloadTickerData(self, tickerInfo, interval=None):
@@ -129,14 +130,28 @@ class Stocks:
         except:
             return pd.DataFrame()
 
+    def getTickersProfile(self, tickerlist):
+        tickerprofilelist = []
+        valuelist = ["symbol", "sector", "industry"]
+        tickers = yf.Tickers((" ").join(tickerlist))
+        dictData = tickers.tickers._asdict()
+        for tkr in tickerlist:
+            infodict = {}
+            jsonTickerData = dictData[tkr].info
+            for key in valuelist:
+                infodict.update({key: jsonTickerData[key] if key in jsonTickerData else ""})
+            tickerprofilelist.append(infodict)
+        return json.dumps(tickerprofilelist)
 
 # stocks = Stocks()
-# tickers = ["KMI"]
+# tickers = ["KMI", "CQP"]
 # stocks.downloadTickersDataRange(tickers, "2020-09-18", "2020-09-18")
 # stocks.getPricesRange(tickers, "2020-09-18", "2020-09-18")
 # stocks.getTickerInfo('CQPRR')
 # print(stocks.getPrice(['AAPLRR']))
-# print(stocks.getPrices(['KMIXXX']))
+# print(stocks.getPrices(tickers))
 # print(stocks.getPrices(['KMIRX', 'PLMXXR']))
-
 # [{"symbol":"ddd", "price":334.00}, {"symbol":"ddd", "price":334.00}]
+# ------------
+# print(stocks.getTickersProfile(tickers))
+
