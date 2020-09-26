@@ -2,3 +2,4 @@ flask
 yfinance
 pandas
 gunicorn
+lxml
