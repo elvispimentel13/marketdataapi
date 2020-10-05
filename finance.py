@@ -3,7 +3,8 @@ import datetime
 import json
 import math
 import pandas as pd
-from datetime import timedelta
+import requests
+import utils
 
 
 class Stocks:
@@ -132,7 +133,8 @@ class Stocks:
 
     def getTickersProfile(self, tickerlist):
         tickerprofilelist = []
-        valuelist = ["symbol", "sector", "industry"]
+        valuelist = ["symbol", "sector", "industry", "forwardPE"]
+        lisnames = [{"symbol": "ticker"}, {"forwardPE": "PER"}]
         tickers = yf.Tickers((" ").join(tickerlist))
         dictData = tickers.tickers._asdict()
         for tkr in tickerlist:
@@ -143,15 +145,35 @@ class Stocks:
             tickerprofilelist.append(infodict)
         return json.dumps(tickerprofilelist)
 
-# stocks = Stocks()
-# tickers = ["KMI", "CQP"]
-# stocks.downloadTickersDataRange(tickers, "2020-09-18", "2020-09-18")
-# stocks.getPricesRange(tickers, "2020-09-18", "2020-09-18")
-# stocks.getTickerInfo('CQPRR')
-# print(stocks.getPrice(['AAPLRR']))
-# print(stocks.getPrices(tickers))
-# print(stocks.getPrices(['KMIRX', 'PLMXXR']))
-# [{"symbol":"ddd", "price":334.00}, {"symbol":"ddd", "price":334.00}]
-# ------------
-# print(stocks.getTickersProfile(tickers))
+
+class Symbols:
+    def getSymbol(self, symbol):
+        url = utils.getConfig("Yahoo-api", "URL").format(symbol)
+        listsymbols = []
+        result = requests.get(url).json()
+        print(result)
+        for x in result['ResultSet']['Result']:
+            if x['symbol'] == symbol:
+                del listsymbols[:]
+                listsymbols.append({"symbol": x['symbol'], "name": x['name']})
+                return listsymbols
+            else:
+                listsymbols.append({"symbol": x['symbol'], "name": x['name']})
+        return json.dumps(listsymbols)
+
+    def getSymbolList(self, query):
+        markets = (utils.getSection("Markets", "USA")).split(", ")
+        if isinstance(query, list):
+            query = query[0]
+        url = utils.getConfig("Yahoo-api", "URL").format(query)
+        listsymbols = []
+        result = requests.get(url).json()
+        # print(result['ResultSet']['Result'])
+        for x in result['ResultSet']['Result']:
+            if x['exchDisp'] in markets:
+                listsymbols.append({"symbol": x['symbol'], "name": x['name']})
+        return json.dumps(listsymbols)
+
+
+
 

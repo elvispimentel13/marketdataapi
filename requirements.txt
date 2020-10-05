@@ -3,3 +3,7 @@ yfinance
 pandas
 gunicorn
 lxml
+multitasking
+requests
+numpy
+yahoofinancials
