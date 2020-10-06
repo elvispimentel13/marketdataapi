@@ -48,7 +48,7 @@ class Prices:
                                     resultObjCopy[key] = valueObj
                             else:
                                 resultObjCopy[key] = 0
-                    resultObjCopy["errors"] = "200"
+                    resultObjCopy["errors"] = "Ok"
                     pricesResult.append(resultObjCopy)
 
         return json.dumps(pricesResult)

@@ -3,7 +3,8 @@ from flask import request
 from finance import Stocks
 from finance import Symbols
 from price import Prices
-import json
+from flask import jsonify
+
 
 app = flask.Flask(__name__)
 stocks = Stocks()
@@ -61,11 +62,11 @@ def getSymbol():
     symbolyahoodata = symbols.getSymbol(data['query'])
     return symbolyahoodata
 
-@app.route('/ticker/prices', methods=['POST'])
+@app.route('/ticker/prices', methods=['GET'])
 def get_price():
     tickers = request.args.get('tickers')
     priceData = prices.get_price(tickers)
-    return priceData
+    return jsonify(priceData)
 
 
 if __name__ == '__main__':
