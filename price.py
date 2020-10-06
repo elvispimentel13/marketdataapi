@@ -51,7 +51,7 @@ class Prices:
                     resultObjCopy["errors"] = "Ok"
                     pricesResult.append(resultObjCopy)
 
-        return json.dumps(pricesResult)
+        return pricesResult
 
     def get_price_data(self, tickers, threads=True):
         tickers = tickers if isinstance(
