@@ -1,5 +1,6 @@
 import flask
 from flask import request
+from historical import Historical
 from finance import Stocks
 from finance import Symbols
 from price import Prices
@@ -10,6 +11,7 @@ app = flask.Flask(__name__)
 stocks = Stocks()
 symbols = Symbols()
 prices = Prices()
+historical = Historical()
 
 @app.route('/ticker-price', methods=['POST'])
 def getStockPrice():
@@ -68,6 +70,15 @@ def get_price():
     priceData = prices.get_price(tickers)
     return jsonify(priceData)
 
+@app.route('/historical/events', methods=['GET'])
+def get_events():
+    tickers = request.args.get('tickers')
+    start = request.args.get('start')
+    end = request.args.get('end')
+    events = request.args.get('events')
+    eventsData = historical.get_events(tickers=str(tickers), start=str(start), end=str(end), events=str(events))
+    print(eventsData)
+    return jsonify(eventsData)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,3 +1,6 @@
+import calendar
+import datetime
+import time
 from configparser import ConfigParser
 import numpy
 import pandas
@@ -19,3 +22,20 @@ class Utils:
 
     def getSection(self, section, value):
         return self.getConfig(section, value)
+
+    # Public static method to format date serial string to readable format and vice versa
+    @staticmethod
+    def format_date(in_date):
+        if isinstance(in_date, str):
+            form_date = int(calendar.timegm(time.strptime(in_date, '%Y-%m-%d')))
+        else:
+            form_date = str((datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=in_date)).date())
+        return form_date
+
+    # static tickers list validation
+    @staticmethod
+    def format_tickers(tickers):
+        tickers = tickers if isinstance(
+            tickers, (list, set, tuple)) else tickers.replace(',', ' ').split()
+        tickers = list(set([ticker.upper() for ticker in tickers]))
+        return tickers

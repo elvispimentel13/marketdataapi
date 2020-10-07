@@ -2,9 +2,7 @@ import copy
 import json
 import time as _time
 import multitasking as _multitasking
-import numpy
 import requests
-import pandas
 import utils
 
 # vars and instances
@@ -13,19 +11,19 @@ _DS = {}
 
 
 class Prices:
-    def get_price(self, tickers, threads=True):
-        tickers = tickers if isinstance(
-            tickers, (list, set, tuple)) else tickers.replace(',', ' ').split()
-        tickers = list(set([ticker.upper() for ticker in tickers]))
+    def get_price(self, tickers, threads=True, format="default"):
+        tickers = utils.format_tickers(tickers)
 
         if tickers:
             if len(tickers) >= 1:
                 data = self.get_price_data(tickers, threads)
         # Process result data and build json object to append in list.
         resultConfig = utils.getConfig("Results", "PRICE")
-        resultExclusionConfig = utils.getConfig("Results", "PRICE_exclude")
-        resultExclusionObj = resultExclusionConfig.strip(" ").split(",")
+        resultFormats = utils.getConfig("Results", "PRICE_valueFormat")
+        resultExclusionConfig = utils.getConfig("Results", "PRICE_exclude").replace(" ", "")
+        resultExclusionObj = resultExclusionConfig.split(",")
         resultObj = json.loads(resultConfig)
+        formatsObj = json.loads(resultFormats)
         pricesResult = []
         if bool(data):
             for tkr in tickers:
@@ -42,8 +40,16 @@ class Prices:
                                     #     raw - values as is,
                                     #     fmt - string value,
                                     #     longFmt - formatted string value
-                                    # keys = valueObj.keys()
-                                    resultObjCopy[key] = valueObj["raw"]
+                                    if format in formatsObj:
+                                        if format in valueObj:
+                                            resultObjCopy[key] = valueObj[formatsObj[format]]
+                                        else:
+                                            if formatsObj[format] in valueObj:
+                                                resultObjCopy[key] = valueObj[formatsObj[format]]
+                                            else:
+                                                resultObjCopy[key] = valueObj["raw"]
+                                    else:
+                                        resultObjCopy[key] = valueObj["raw"]
                                 else:
                                     resultObjCopy[key] = valueObj
                             else:
@@ -54,10 +60,8 @@ class Prices:
         return pricesResult
 
     def get_price_data(self, tickers, threads=True):
-        tickers = tickers if isinstance(
-            tickers, (list, set, tuple)) else tickers.replace(',', ' ').split()
+        tickers = utils.format_tickers(tickers)
 
-        tickers = list(set([ticker.upper() for ticker in tickers]))
         if threads:
             if threads is True:
                 threadsQty = min([len(tickers), _multitasking.cpu_count() * 2])
@@ -86,7 +90,7 @@ class Prices:
         _DS[ticker.upper()] = data
 
     def download_price(self, ticker):
-        url = utils.getConfig("Yahoo-api", "QUERY").format(ticker, "price")
+        url = utils.getConfig("Yahoo-api", "PRICEQUERY").format(ticker, "price")
         data = requests.get(url).json()
         return data
 
@@ -94,3 +98,4 @@ class Prices:
 # print(prices.get_price("KMI,AAPL"))
 # print(prices.download_price("KMI"))
 # print(utils.getConfig("Yahoo-api", "QUERY").format("KMI", "price"))
+# print(utils.format_date("2020-01-01"))
