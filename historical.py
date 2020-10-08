@@ -1,14 +1,13 @@
 import copy
 import json
-
 import multitasking as _multitasking
 import requests
 import utils
 import time as _time
+import shared
 
 # vars and instances
 utils = utils.Utils()
-_DSD = {}
 
 
 class Historical:
@@ -84,32 +83,32 @@ class Historical:
 
     def get_events_data(self, tickers, start=0, end=9999999999, interval="1d", events="div", threads=True):
         tickers = utils.format_tickers(tickers)
-
+        shared._DSH = {}
         if threads:
             if threads is True:
                 threadsQty = min([len(tickers), _multitasking.cpu_count() * 2])
                 _multitasking.set_max_threads(threadsQty)
                 for i, ticker in enumerate(tickers):
                     self.download_events_threaded(ticker, start, end, interval, events)
-                while len(_DSD) < len(tickers):
+                while len(shared._DSH) < len(tickers):
                     _time.sleep(0.01)
             else:
                 if len(tickers) == 1:
                     ticker = tickers[0]
                     resultEvent = self.download_events(ticker, start, end, interval, events)
-                    _DSD[ticker.upper()] = resultEvent
+                    shared._DSH[ticker.upper()] = resultEvent
                 elif len(tickers) <= 5:
                     for i, ticker in enumerate(tickers):
                         resultEvent = self.download_events(ticker, start, end, interval, events)
-                        _DSD[ticker.upper()] = resultEvent
+                        shared._DSH[ticker.upper()] = resultEvent
                 else:
                     self.get_events(tickers, start, end, interval, events, threads=True)
-        return _DSD
+        return shared._DSH
 
     @_multitasking.task
     def download_events_threaded(self, ticker, start=0, end=9999999999, interval="1d", events="div"):
         data = self.download_events(ticker, start, end, interval, events)
-        _DSD[ticker.upper()] = data
+        shared._DSH[ticker.upper()] = data
 
     def download_events(self, ticker, start=0, end=9999999999, interval="1d", events="div"):
         url = utils.getConfig("Yahoo-api", "EVENTSMODULE").format(symbol=ticker, start=start, end=end,
@@ -118,4 +117,4 @@ class Historical:
         return data
 
 # historical = Historical()
-# print(historical.get_events("aapl, kmi, cqp", start="2019-01-01", end="2020-10-10", events="split"))
+# print(historical.get_events("aapl, kmi, cqp", start="2019-01-01", end="2020-10-10", events="dividend"))
