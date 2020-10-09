@@ -12,7 +12,7 @@ utils = utils.Utils()
 
 class Historical:
     def get_events(self, tickers, start=0, end=9999999999,
-                      interval="1mo", events="div", threads=True):
+                      interval="1mo", event="div", threads=True):
         tickers = utils.format_tickers(tickers)
         if not isinstance(start, int):
             start = utils.format_date(start)
@@ -22,17 +22,17 @@ class Historical:
         if interval not in intervals:
             interval = intervals[len(intervals)-2]
         eventsDefault = json.loads(utils.getConfig("Configurations", "EVENTS"))
-        if events in eventsDefault:
-            events = eventsDefault[events]
+        if event in eventsDefault:
+            event = eventsDefault[event]
         else:
-            events = eventsDefault["dividends"]
+            event = eventsDefault["dividends"]
         if tickers:
             if len(tickers) >= 1:
-                data = self.get_events_data(tickers, start, end, interval, events)
+                data = self.get_events_data(tickers, start, end, interval, event)
         # Process result data and build json object to append in list.
-        resultConfig = utils.getConfig("Results", "DIVIDEND" if events == "div" else "SPLIT")
-        resultExclusionConfig = utils.getConfig("Results", "DIVIDEND_exclude" if events == "div" else "SPLIT_exclude").replace(" ", "")
-        resultEvent = utils.getConfig("Results", "DIVIDEND_event" if events == "div" else "SPLIT_event")
+        resultConfig = utils.getConfig("Results", "DIVIDEND" if event == "div" else "SPLIT")
+        resultExclusionConfig = utils.getConfig("Results", "DIVIDEND_exclude" if event == "div" else "SPLIT_exclude").replace(" ", "")
+        resultEvent = utils.getConfig("Results", "DIVIDEND_event" if event == "div" else "SPLIT_event")
         resultExclusionObj = resultExclusionConfig.split(",")
         resultObj = json.loads(resultConfig)
         resultEventObj = json.loads(resultEvent)
@@ -81,7 +81,7 @@ class Historical:
                     pass
         return eventResult
 
-    def get_events_data(self, tickers, start=0, end=9999999999, interval="1d", events="div", threads=True):
+    def get_events_data(self, tickers, start=0, end=9999999999, interval="1d", event="div", threads=True):
         tickers = utils.format_tickers(tickers)
         shared._DSH = {}
         if threads:
@@ -89,32 +89,32 @@ class Historical:
                 threadsQty = min([len(tickers), _multitasking.cpu_count() * 2])
                 _multitasking.set_max_threads(threadsQty)
                 for i, ticker in enumerate(tickers):
-                    self.download_events_threaded(ticker, start, end, interval, events)
+                    self.download_events_threaded(ticker, start, end, interval, event)
                 while len(shared._DSH) < len(tickers):
                     _time.sleep(0.01)
             else:
                 if len(tickers) == 1:
                     ticker = tickers[0]
-                    resultEvent = self.download_events(ticker, start, end, interval, events)
+                    resultEvent = self.download_events(ticker, start, end, interval, event)
                     shared._DSH[ticker.upper()] = resultEvent
                 elif len(tickers) <= 5:
                     for i, ticker in enumerate(tickers):
-                        resultEvent = self.download_events(ticker, start, end, interval, events)
+                        resultEvent = self.download_events(ticker, start, end, interval, event)
                         shared._DSH[ticker.upper()] = resultEvent
                 else:
-                    self.get_events(tickers, start, end, interval, events, threads=True)
+                    self.get_events(tickers, start, end, interval, event, threads=True)
         return shared._DSH
 
     @_multitasking.task
-    def download_events_threaded(self, ticker, start=0, end=9999999999, interval="1d", events="div"):
-        data = self.download_events(ticker, start, end, interval, events)
+    def download_events_threaded(self, ticker, start=0, end=9999999999, interval="1d", event="div"):
+        data = self.download_events(ticker, start, end, interval, event)
         shared._DSH[ticker.upper()] = data
 
-    def download_events(self, ticker, start=0, end=9999999999, interval="1d", events="div"):
+    def download_events(self, ticker, start=0, end=9999999999, interval="1d", event="div"):
         url = utils.getConfig("Yahoo-api", "EVENTSMODULE").format(symbol=ticker, start=start, end=end,
-                                                                  interval=interval, events=events)
+                                                                  interval=interval, event=event)
         data = requests.get(url).json()
         return data
 
 # historical = Historical()
-# print(historical.get_events("aapl, kmi, cqp", start="2019-01-01", end="2020-10-10", events="dividend"))
+# print(historical.get_events("aapl, kmi, cqp", start="2019-01-01", end="2020-10-10", event="dividend"))
