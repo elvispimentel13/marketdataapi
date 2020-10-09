@@ -71,7 +71,7 @@ class Historical:
                                     else:
                                         resultObjCopy[key] = ""
                                 else:
-                                    resultObjCopy[key] = 0
+                                    resultObjCopy[key] = []
                         resultObjCopy["errors"] = "Ok"
                         if "symbol" in resultObjCopy:
                             if resultObjCopy["symbol"] == "symbol":
