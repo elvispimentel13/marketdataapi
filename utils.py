@@ -25,11 +25,14 @@ class Utils:
 
     # Public static method to format date serial string to readable format and vice versa
     @staticmethod
-    def format_date(in_date):
+    def format_date(in_date, intonly=False):
         if isinstance(in_date, str):
             form_date = int(calendar.timegm(time.strptime(in_date, '%Y-%m-%d')))
         else:
             form_date = str((datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=in_date)).date())
+        if intonly:
+            if isinstance(form_date, str):
+                form_date = int(calendar.timegm(time.strptime(form_date, '%Y-%m-%d')))
         return form_date
 
     # static tickers list validation

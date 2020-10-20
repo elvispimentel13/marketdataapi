@@ -77,8 +77,15 @@ def get_event_data():
     end = request.args.get('end')
     event = request.args.get('event')
     eventData = historical.get_events(tickers=str(tickers), start=str(start), end=str(end), event=str(event))
-    print(eventData)
     return jsonify(eventData)
+
+@app.route('/historical/prices', methods=['GET'])
+def get_prices_range():
+    tickers = request.args.get('tickers')
+    start = request.args.get('start')
+    end = request.args.get('end')
+    pricesData = historical.get_prices(tickers=str(tickers), start=str(start), end=str(end))
+    return jsonify(pricesData)
 
 if __name__ == '__main__':
     app.run(debug=True)
