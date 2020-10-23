@@ -133,22 +133,31 @@ class Historical:
                     tkrValues = data[tkr]["chart"]["result"]
                     rangeResult = []
                     if tkrValues:
-                        dateValues = tkrValues[0]['timestamp']
-                        pricesValues = tkrValues[0]['indicators']['adjclose']
-                        if pricesValues:
-                            closeValues = pricesValues[0]['adjclose']
-                            # for (idx, dt) in enumerate(dateValues):
-                        for idx, dt in enumerate(dateValues):
-                            if utils.format_date(dt) in ([duplicate['date'] for duplicate in rangeResult]):
-                                duplicate = {"date": utils.format_date(dt), "price": closeValues[idx]}
-                            else:
-                                rangeResult.append({"date": utils.format_date(dt), "price": closeValues[idx]})
-                        resultObjCopy["range"] = rangeResult
-                        resultObjCopy["errors"] = "Ok"
-                        if "symbol" in resultObjCopy:
-                            if resultObjCopy["symbol"] == "symbol":
-                                resultObjCopy["symbol"] = tkr
-                        pricesResult.append(resultObjCopy)
+                        if not ('timestamp' in tkrValues[0]):
+                            print("not timestamp")
+                            resultObjCopy["range"] = rangeResult
+                            resultObjCopy["errors"] = "NOT VALUES IN RANGE PROVIDED."
+                            if "symbol" in resultObjCopy:
+                                if resultObjCopy["symbol"] == "symbol":
+                                    resultObjCopy["symbol"] = tkr
+                            pricesResult.append(resultObjCopy)
+                        else:
+                            dateValues = tkrValues[0]['timestamp']
+                            pricesValues = tkrValues[0]['indicators']['adjclose']
+                            if pricesValues:
+                                closeValues = pricesValues[0]['adjclose']
+                                # for (idx, dt) in enumerate(dateValues):
+                            for idx, dt in enumerate(dateValues):
+                                if utils.format_date(dt) in ([duplicate['date'] for duplicate in rangeResult]):
+                                    duplicate = {"date": utils.format_date(dt), "price": closeValues[idx]}
+                                else:
+                                    rangeResult.append({"date": utils.format_date(dt), "price": closeValues[idx]})
+                            resultObjCopy["range"] = rangeResult
+                            resultObjCopy["errors"] = "Ok"
+                            if "symbol" in resultObjCopy:
+                                if resultObjCopy["symbol"] == "symbol":
+                                    resultObjCopy["symbol"] = tkr
+                            pricesResult.append(resultObjCopy)
                 except ValueError as ex:
                     print(ex)
         return pricesResult
@@ -193,6 +202,8 @@ class Historical:
             start = utils.format_date(start.strftime('%Y-%m-%d'), True)
         if isinstance(end, datetime.date) or isinstance(end, str):
             end = utils.format_date(end.strftime('%Y-%m-%d'), True)
+        # ADJUST DATE TO MARKET OPEN TIME (9:30AM)
+        end = end + 48600
         return {"start": math.trunc(start), "end": math.trunc(end)}
 
     # DOWNLOAD EVENT(S)
@@ -220,7 +231,7 @@ class Historical:
 
 # historical = Historical()
 # print(historical.get_events("aapl, ko", start="2019-01-01", end="2020-10-10", event="dividend"))
-# print(historical.get_prices("nio", start=1602919009, end=1602919009))
+# print(historical.get_prices("aapl,kmi", start="2020-10-16", end="2020-10-19"))
 # start = "2020-10-17"
 # end = "2020-10-17"
 # startdt = utils.format_date(start, True)
