@@ -146,12 +146,14 @@ class Historical:
                             pricesValues = tkrValues[0]['indicators']['adjclose']
                             if pricesValues:
                                 closeValues = pricesValues[0]['adjclose']
-                                # for (idx, dt) in enumerate(dateValues):
                             for idx, dt in enumerate(dateValues):
+                                closeValue = closeValues[idx] if closeValues else 0
                                 if utils.format_date(dt) in ([duplicate['date'] for duplicate in rangeResult]):
-                                    duplicate = {"date": utils.format_date(dt), "price": closeValues[idx]}
+                                    duplicate = {"date": utils.format_date(dt),
+                                                 "price": utils.validate_value(closeValue)}
                                 else:
-                                    rangeResult.append({"date": utils.format_date(dt), "price": closeValues[idx]})
+                                    rangeResult.append({"date": utils.format_date(dt),
+                                                        "price": utils.validate_value(closeValue)})
                             resultObjCopy["range"] = rangeResult
                             resultObjCopy["errors"] = "Ok"
                             if "symbol" in resultObjCopy:
@@ -192,7 +194,11 @@ class Historical:
         today = datetime.datetime.today()
         now = time.time()
         if startdt >= enddt:
-            start = enddt - datetime.timedelta(days=1)
+            # Flip values
+            stflp = startdt
+            endflp = enddt
+            start = endflp
+            end = stflp
         if startdt > today:
             start = now
         # enddt = enddt + datetime.timedelta(days=1)
@@ -231,7 +237,7 @@ class Historical:
 
 # historical = Historical()
 # print(historical.get_events("aapl, ko", start="2019-01-01", end="2020-10-10", event="dividend"))
-# print(historical.get_prices("aapl,kmi", start="2020-10-16", end="2020-10-19"))
+# print(historical.get_prices("heoff,wmicx", start="2020-10-22", end="2020-10-22"))
 # start = "2020-10-17"
 # end = "2020-10-17"
 # startdt = utils.format_date(start, True)

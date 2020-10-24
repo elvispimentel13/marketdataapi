@@ -42,3 +42,12 @@ class Utils:
             tickers, (list, set, tuple)) else tickers.replace(',', ' ').split()
         tickers = list(set([ticker.upper() for ticker in tickers]))
         return tickers
+
+    @staticmethod
+    def validate_value(value):
+        if value is None:
+            return 0
+        elif isinstance(value, str):
+            return 0
+        else:
+            return value
