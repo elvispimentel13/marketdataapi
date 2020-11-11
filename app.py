@@ -1,29 +1,31 @@
 import flask
 from flask import request
 from historical import Historical
-from finance import Stocks
+from finance import OldStocks
 from finance import Symbols
 from price import Prices
+from stock import Stock
 from flask import jsonify
 
 
 app = flask.Flask(__name__)
-stocks = Stocks()
+oldStocks = OldStocks()
 symbols = Symbols()
 prices = Prices()
 historical = Historical()
+stock = Stock()
 
 @app.route('/ticker-price', methods=['POST'])
 def getStockPrice():
     data = request.json
-    pricedata = stocks.getPrices(data['tickers'])
+    pricedata = oldStocks.getPrices(data['tickers'])
     return pricedata
 
 
 @app.route('/tickerInfo', methods=['POST'])
 def getTickerInfo():
     ticker = request.args.get('ticker')
-    data = stocks.getTickerInfo(ticker)
+    data = oldStocks.getTickerInfo(ticker)
     tickerdata = data.get_info()
     return tickerdata
 
@@ -39,14 +41,14 @@ def getPricesRange():
     if 'startdate' in data:
         if data['startdate']:
             startdt = data['startdate']
-    pricesdatarange = stocks.getPricesRange(data['tickers'], enddt, startdt)
+    pricesdatarange = oldStocks.getPricesRange(data['tickers'], enddt, startdt)
     return pricesdatarange
 
 
 @app.route('/ticker/getProfiles', methods=['POST'])
 def getTickersProfile():
     data = request.json
-    profilesdata = stocks.getTickersProfile(data['tickers'])
+    profilesdata = oldStocks.getTickersProfile(data['tickers'])
     return profilesdata
 
 
@@ -86,6 +88,12 @@ def get_prices_range():
     end = request.args.get('end')
     pricesData = historical.get_prices(tickers=str(tickers), start=str(start), end=str(end))
     return jsonify(pricesData)
+
+@app.route('/stock/summary', methods=['GET'])
+def get_stock_summary():
+    tickers = request.args.get('tickers')
+    summaryData = stock.get_summary(tickers=str(tickers))
+    return jsonify(summaryData)
 
 if __name__ == '__main__':
     app.run(debug=True)

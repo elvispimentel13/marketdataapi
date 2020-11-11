@@ -6,25 +6,26 @@ import requests
 import utils
 import shared
 
+
 # vars and instances
 utils = utils.Utils()
 
 
-class Prices:
-    def get_price(self, tickers, threads=True, format="default"):
+class Stock:
+    def get_summary(self, tickers, threads=True, format="default"):
         tickers = utils.format_tickers(tickers)
 
         if tickers:
             if len(tickers) >= 1:
-                data = self.get_price_data(tickers, threads)
+                data = self.get_summary_data(tickers, threads)
         # Process result data and build json object to append in list.
-        resultConfig = utils.getConfig("Results", "PRICE")
+        resultConfig = utils.getConfig("Results", "SUMMARY")
         resultFormats = utils.getConfig("Results", "DEFAULT_valueFormat")
         resultExclusionConfig = utils.getConfig("Results", "DEFAULT_exclude").replace(" ", "")
         resultExclusionObj = resultExclusionConfig.split(",")
         resultObj = json.loads(resultConfig)
         formatsObj = json.loads(resultFormats)
-        pricesResult = []
+        summaryResult = []
         if bool(data):
             for tkr in tickers:
                 resultObjCopy = copy.copy(resultObj)
@@ -33,7 +34,7 @@ class Prices:
                     try:
                         for (key, value) in resultObj.items():
                             if key not in resultExclusionObj:
-                                valueObj = tkrValues[0]["price"][value] if value in tkrValues[0]["price"] else []
+                                valueObj = tkrValues[0]["summaryDetail"][value] if value in tkrValues[0]["summaryDetail"] else []
                                 if bool(valueObj):
                                     if hasattr(valueObj, "keys"):
                                         # Evaluate keys and determine what key to use
@@ -56,54 +57,51 @@ class Prices:
                                 else:
                                     resultObjCopy[key] = 0
                         resultObjCopy["errors"] = "Ok"
+                        if "symbol" in resultObjCopy:
+                            resultObjCopy["symbol"] = tkr
                     except:
                         resultObjCopy["errors"] = "Exception getting prices: {}"
-                    pricesResult.append(resultObjCopy)
-        return pricesResult
+                    summaryResult.append(resultObjCopy)
+        return (summaryResult)
 
-    def get_price_data(self, tickers, threads=True):
+    def get_summary_data(self, tickers, threads=True):
         tickers = utils.format_tickers(tickers)
-        # Clear shared._DSP
-        shared._DSP = {}
+        # Clear shared._DSSS
+        shared._DSSS = {}
         if threads:
             if threads is True:
                 threadsQty = min([len(tickers), _multitasking.cpu_count() * 2])
                 _multitasking.set_max_threads(threadsQty)
                 for i, ticker in enumerate(tickers):
-                    self.download_price_threaded(ticker)
-                    # _DSP[ticker.upper()] = resultPrice
-                while len(shared._DSP) < len(tickers):
+                    self.download_summary_threaded(ticker)
+                while len(shared._DSSS) < len(tickers):
                     _time.sleep(0.01)
             else:
                 if len(tickers) == 1:
                     ticker = tickers[0]
-                    resultPrice = self.download_price(ticker)
-                    shared._DSP[ticker.upper()] = resultPrice
+                    resultSummary = self.download_summary(ticker)
+                    shared._DSSS[ticker.upper()] = resultSummary
                 elif len(tickers) <= 5:
                     for i, ticker in enumerate(tickers):
-                        resultPrice = self.download_price(ticker)
-                        shared._DSP[ticker.upper()] = resultPrice
+                        resultSummary = self.download_summary(ticker)
+                        shared._DSSS[ticker.upper()] = resultSummary
                 else:
-                    self.get_price(tickers, threads=True)
-        data = shared._DSP
+                    self.get_summary(tickers, threads=True)
+        data = shared._DSSS
         return data
 
     @_multitasking.task
-    def download_price_threaded(self, ticker):
-        data = self.download_price(ticker)
-        shared._DSP[ticker.upper()] = data
+    def download_summary_threaded(self, ticker):
+        data = self.download_summary(ticker)
+        shared._DSSS[ticker.upper()] = data
 
-    def download_price(self, ticker):
-        url = utils.getConfig("Yahoo-api", "PRICEQUERY").format(ticker, "price")
+    def download_summary(self, ticker):
+        url = utils.getConfig("Yahoo-api", "SUMMARYQUERY").format(ticker, "summaryDetail")
         data = requests.get(url).json()
         return data
 
-# prices = Prices()
-# print(prices.get_price("kmi, msft, crm, etsy"))
-# print(prices.get_price("T"))
-# print(prices.get_price("aapl"))
-# print(prices.get_price("tslA"))
-# print(prices.get_price("pLM"))
-# print(prices.download_price("KMI"))
+# stock = Stock()
+# print(stock.get_summary("kmi"))
+# print(stock.download_summary("KMI"))
+# print(stock.get_summary_data("AAPL"))
 # print(utils.getConfig("Yahoo-api", "QUERY").format("KMI", "price"))
-# print(utils.format_date("2020-01-01"))

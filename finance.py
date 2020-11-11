@@ -7,7 +7,7 @@ import requests
 import utils
 
 
-class Stocks:
+class OldStocks:
     def getTickerInfo(self, ticker):
         tickerInfo = yf.Ticker(ticker)
         return tickerInfo

@@ -111,9 +111,9 @@ class Historical:
     # GET PRICES (RANGE)
     def get_prices(self, tickers, start=0, end=9999999999, interval="1d", threads=True):
         tickers = utils.format_tickers(tickers)
-        startdt = utils.format_date(start, True)
-        enddt = utils.format_date(end, True)
-        dates = self.validate_date_range(start=startdt, end=enddt)
+        startdtx = utils.format_date(start, True)
+        enddtx = utils.format_date(end, True)
+        dates = self.validate_date_range(start=startdtx, end=enddtx)
         startdt = dates['start']
         enddt = dates['end']
         intervals = utils.getConfig("Configurations", "Intervals").replace(" ", "").split(",")
@@ -134,7 +134,6 @@ class Historical:
                     rangeResult = []
                     if tkrValues:
                         if not ('timestamp' in tkrValues[0]):
-                            print("not timestamp")
                             resultObjCopy["range"] = rangeResult
                             resultObjCopy["errors"] = "NOT VALUES IN RANGE PROVIDED."
                             if "symbol" in resultObjCopy:
@@ -209,7 +208,8 @@ class Historical:
         if isinstance(end, datetime.date) or isinstance(end, str):
             end = utils.format_date(end.strftime('%Y-%m-%d'), True)
         # ADJUST DATE TO MARKET OPEN TIME (9:30AM)
-        end = end + 48600
+        start = start - 172800
+        end = end + 172800
         return {"start": math.trunc(start), "end": math.trunc(end)}
 
     # DOWNLOAD EVENT(S)
@@ -236,10 +236,10 @@ class Historical:
         return data
 
 # historical = Historical()
-# print(historical.get_events("aapl, ko", start="2019-01-01", end="2020-10-10", event="dividend"))
-# print(historical.get_prices("heoff,wmicx", start="2020-10-22", end="2020-10-22"))
-# start = "2020-10-17"
-# end = "2020-10-17"
+# print(historical.get_events("aapl", start="2020-11-01", end="2020-11-02", event="dividend"))
+# print(historical.get_prices("aapl", start="2020-11-01", end="2020-11-02"))
+# start = "2020-11-01"
+# end = "2020-11-02"
 # startdt = utils.format_date(start, True)
 # enddt = utils.format_date(end, True)
 # print(historical.validate_date_range(start=startdt, end=enddt))
